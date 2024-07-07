@@ -28,6 +28,7 @@ class GameScene extends Phaser.Scene {
     | Phaser.Sound.HTML5AudioSound
     | Phaser.Sound.WebAudioSound
     | undefined
+  emitter: Phaser.GameObjects.Particles.ParticleEmitter | undefined
 
   constructor() {
     super("scene-game")
@@ -39,13 +40,15 @@ class GameScene extends Phaser.Scene {
     this.load.image("bg", "assets/bg.png")
     this.load.image("basket", "assets/basket.png")
     this.load.image("apple", "assets/apple.png")
-    this.load.audio("coin", "assets/audio/coin.mp3")
-    this.load.audio("bgMusic", "assets/audio/bgMusic.mp3")
+    this.load.image("money", "assets/money.png")
+
+    this.load.audio("coin", "assets/coin.mp3")
+    this.load.audio("backgroundMusic", "assets/bgMusic.mp3")
   }
 
   create() {
-    this.coinMusic = this.sound.add("coinMusic")
-    this.bgMusic = this.sound.add("bgMusic")
+    this.coinMusic = this.sound.add("coin")
+    this.bgMusic = this.sound.add("backgroundMusic")
     this.bgMusic.play()
 
     this.add.image(0, 0, "bg").setOrigin(0, 0)
@@ -79,6 +82,20 @@ class GameScene extends Phaser.Scene {
     })
 
     this.timedEvent = this.time.delayedCall(3000, this.gameOver, [], this)
+
+    this.emitter = this.add.particles(0, 0, "money", {
+      speed: 100,
+      gravityY: speedDown - 200,
+      scale: 0.04,
+      duration: 100,
+      emitting: false,
+    })
+    this.emitter.startFollow(
+      this.player,
+      this.player.width / 2,
+      this.player.height / 2,
+      true,
+    )
   }
 
   update() {
@@ -109,6 +126,7 @@ class GameScene extends Phaser.Scene {
   }
 
   targetHit() {
+    this.emitter?.start()
     this.coinMusic?.play()
     this.target.setY(0)
     this.target.setX(this.getRandomX())
