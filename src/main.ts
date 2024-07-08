@@ -8,6 +8,17 @@ const sizes = {
 
 const speedDown = 300
 
+const gameCanvas = document.getElementById("gameCanvas") as HTMLCanvasElement
+const gameStartDiv = document.getElementById("gameStartDiv") as HTMLElement
+const gameStart = document.getElementById("gameStart") as HTMLElement
+const gameEndDiv = document.getElementById("gameEndDiv") as HTMLElement
+const gameWinLoseSpan = document.getElementById(
+  "gameWinLoseSpan",
+) as HTMLElement
+const gameEndScoreSpan = document.getElementById(
+  "gameEndScoreSpan",
+) as HTMLElement
+
 class GameScene extends Phaser.Scene {
   player: Phaser.Types.Physics.Arcade.ImageWithDynamicBody | undefined
   cursor: Phaser.Types.Input.Keyboard.CursorKeys | undefined
@@ -47,6 +58,8 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.scene.pause("game-scene")
+
     this.coinMusic = this.sound.add("coin")
     this.bgMusic = this.sound.add("backgroundMusic")
     this.bgMusic.play()
@@ -81,7 +94,7 @@ class GameScene extends Phaser.Scene {
       color: "#000000",
     })
 
-    this.timedEvent = this.time.delayedCall(3000, this.gameOver, [], this)
+    this.timedEvent = this.time.delayedCall(30000, this.gameOver, [], this)
 
     this.emitter = this.add.particles(0, 0, "money", {
       speed: 100,
@@ -135,11 +148,21 @@ class GameScene extends Phaser.Scene {
   }
 
   gameOver() {
-    console.log("Game Over")
+    this.sys.game.destroy(true)
+
+    if (this.points >= 10) {
+      gameEndScoreSpan.textContent = this.points.toString()
+      gameWinLoseSpan.textContent = "You Win! 😁"
+    } else {
+      gameEndScoreSpan.textContent = this.points.toString()
+      gameWinLoseSpan.textContent = "You Lose! 🫥"
+    }
+
+    gameEndDiv.style.display = "flex"
   }
 }
 
-const config = {
+const config: Phaser.Types.Core.GameConfig = {
   type: Phaser.WEBGL,
   width: sizes.width,
   height: sizes.height,
@@ -147,7 +170,7 @@ const config = {
   physics: {
     default: "arcade",
     arcade: {
-      gravity: { y: speedDown },
+      gravity: { x: 0, y: speedDown },
       debug: true,
     },
   },
@@ -155,3 +178,8 @@ const config = {
 }
 
 const game = new Phaser.Game(config)
+
+gameStart.addEventListener("click", () => {
+  gameStartDiv.style.display = "none"
+  game.scene.resume("game-scene")
+})
